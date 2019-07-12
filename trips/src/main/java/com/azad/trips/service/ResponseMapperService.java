@@ -7,22 +7,17 @@ import com.azad.trips.exception.ApplicationException;
 import com.azad.trips.model.Departure;
 import com.azad.trips.model.Response;
 import com.azad.trips.model.Route;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
-public class ResponseMapper {
+public class ResponseMapperService {
 	
 	/**
 	 * Parse the API response to Given Type (Model Class)
 	 * @param apiURL
-	 * @return
-	 * @throws IOException 
-	 * @throws JsonMappingException 
-	 * @throws JsonParseException 
+	 * @return <T> T
 	 */
 	public <T> T getRoutes(String apiURL, Class<T> valueType) {
 		String jsonString = new NextTripApiConsumer().executeHttpGet(apiURL);
@@ -33,25 +28,21 @@ public class ResponseMapper {
 		try {
 			routes = mapper.readValue(jsonString, new TypeReference<List<?>>(){});
 		} catch (IOException e) {
-			throw new ApplicationException("Fatal error while Parsing the response");
+			throw new ApplicationException("While Parsing the ROUTES Response - "+ e.getMessage());
 		}
-		System.out.println("Route "+routes);
 		return routes;
 	}
 	
 	private ObjectMapper mapper = new ObjectMapper();
 	
-	public ResponseMapper( ) {
+	public ResponseMapperService( ) {
 		mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
 	}
 	
 	/**
-	 * Parse the API response to Given Type (Model Class)
+	 * Parse the API response to {@link Route} Model Class
 	 * @param apiURL
-	 * @return
-	 * @throws IOException 
-	 * @throws JsonMappingException 
-	 * @throws JsonParseException 
+	 * @return List<Route>
 	 */
 	public List<Route> findRoutes(String apiURL) {
 		String jsonString = jsonResponse(apiURL);
@@ -59,22 +50,32 @@ public class ResponseMapper {
 		try {
 			routes = mapper.readValue(jsonString, new TypeReference<List<Route>>(){});
 		} catch (IOException e) {
-			throw new ApplicationException("Fatal error while Parsing the response");
+			throw new ApplicationException("While Parsing the ROUTE Response - "+ e.getMessage());
 		}
 		return routes;
 	}
 	
+	/**
+	 * Parse the API response to {@link Response} Model Class
+	 * @param apiURL
+	 * @return List<Response>
+	 */
 	public List<Response> populateResponse(String apiURL) {
 		String jsonString = jsonResponse(apiURL);
 		List<Response> response;
 		try {
 			response = mapper.readValue(jsonString, new TypeReference<List<Response>>(){});
 		} catch (IOException e) {
-			throw new ApplicationException("Fatal error while Parsing the response");
+			throw new ApplicationException("While Parsing the DIRECTIONS/STOPS Response - "+e.getMessage());
 		}
 		return response;
 	}
 	
+	/**
+	 * Parse the API Departure to {@link Departure} Model Class
+	 * @param apiURL
+	 * @return List<Response>
+	 */
 	public List<Departure> findTimeDepartures(String apiURL) {
 		String jsonString = xmlResponse(apiURL, "application/xml");
 		mapper = new XmlMapper();
@@ -83,7 +84,7 @@ public class ResponseMapper {
 		try {
 			departure = mapper.readValue(jsonString, new TypeReference<List<Departure>>(){});
 		} catch (IOException e) {
-			throw new ApplicationException("Fatal error while Parsing the response");
+			throw new ApplicationException("While Parsing the TIME-SCHEDULE Response - " + e.getMessage());
 		}
 		return departure;
 	}

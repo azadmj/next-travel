@@ -16,10 +16,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
  * "RouteDirection": "SOUTHBOUND", "Terminal": "", "VehicleHeading": 0,
  * "VehicleLatitude": 0, "VehicleLongitude":
  * 
- * @author AMuhamed
+ * @author azad
  *
  */
-public class Departure implements Comparable<Departure>{
+public class Departure implements Comparable<Departure> {
 
 	private boolean actual;
 	private Integer blockNumber;
@@ -179,7 +179,6 @@ public class Departure implements Comparable<Departure>{
 	 * @return
 	 */
 	public boolean hasScheduleAfterNow(Date now) {
-		System.out.println("departureTime:: " + departureTime + "--" + "now::" + now);
 		try {
 			DateFormat dtf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			Date departureDateTime = dtf.parse(departureTime);
@@ -188,7 +187,7 @@ public class Departure implements Comparable<Departure>{
 			if (departureDateTime.after(now))
 				return true;
 		} catch (ParseException e) {
-			e.printStackTrace();
+			System.err.println("While Parsing Findind the nearest BUS TIME - " + e.getMessage());
 		}
 		return false;
 	}

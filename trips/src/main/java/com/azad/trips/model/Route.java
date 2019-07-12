@@ -1,13 +1,17 @@
 package com.azad.trips.model;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
- * POJO for JSON - "Description": "METRO A Line", "ProviderID": "8", "Route": "921"
+ * POJO for JSON - "Description": "METRO A Line", "ProviderID": "8", "Route":
+ * "921"
  * 
  * @author azad
  *
  */
 
-public class Route {
+public class Route extends NextTripBase implements Comparable<Route> {
 	private Integer route;
 	private Integer providerID;
 	private String description;
@@ -35,9 +39,12 @@ public class Route {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
-	public Boolean hasMatchingRoutes(String route) {
-		return description.contains(route);//TODO a pattern bases search for the route
+
+	@Override
+	public Boolean hasMatching(String route) {
+		Pattern pattern = Pattern.compile(route);
+	    Matcher matcher = pattern.matcher(description);
+	    return matcher.find();
 	}
 
 	@Override
@@ -52,7 +59,9 @@ public class Route {
 		builder.append("]");
 		return builder.toString();
 	}
-	
-	
 
+	@Override
+	public int compareTo(Route o) {
+		return this.route.compareTo(o.getRoute());
+	}
 }

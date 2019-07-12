@@ -3,6 +3,7 @@ package com.azad.trips.service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.ClientProtocolException;
@@ -29,7 +30,7 @@ public class NextTripApiConsumer {
 	public String executeHttpGet(String apiURL, String contentType) {
 		String jsonString = new String();
 		CloseableHttpClient httpClient = null;
-		BufferedReader br = null;
+		BufferedReader bufferR = null;
 		CloseableHttpResponse response = null;
 		try {
 			httpClient = HttpClientBuilder.create().build();
@@ -44,32 +45,27 @@ public class NextTripApiConsumer {
 				//TODO create a wrapper object to contain status and response together.
 			}
 
-			br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
-			String output;
-			while ((output = br.readLine()) != null) {
-				jsonString += output;
-			}
+			bufferR = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			jsonString = bufferR.lines().collect(Collectors.joining("\n"));
 
 		} catch (ClientProtocolException e) {
-			e.printStackTrace();
-			throw new ApplicationException("Failed - Invalid URL");
+			throw new ApplicationException("Invalid URL - "+e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw new ApplicationException("Failed - Interrupted I/O operations");
+			throw new ApplicationException("Interrupted I/O operations - " + e.getMessage());
 		} finally {
 			try {
 				if (httpClient != null) {
 					httpClient.close();
 				}
-				if (br != null) {
-					br.close();
+				if (bufferR != null) {
+					bufferR.close();
 				}
 				if (response != null) {
 					response.close();
 				}
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.err.println("While closing the connection/stream - " +e.getMessage());
 			}
 		}
 		return jsonString;

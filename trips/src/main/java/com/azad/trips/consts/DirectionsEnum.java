@@ -1,5 +1,7 @@
 package com.azad.trips.consts;
 
+import com.azad.trips.exception.RouteNotFoundException;
+
 /**
  * Enum for Available directions
  * 1 = South, 2 = East, 3 = West, 4 = North
@@ -22,5 +24,13 @@ public enum DirectionsEnum {
 	public String id() {
 		return id;
 	}
+
+	public static DirectionsEnum lookup(String id) {
+        try {
+            return DirectionsEnum.valueOf(id);
+        } catch (IllegalArgumentException e) {
+            throw new RouteNotFoundException("Invalid Direction: " + id);
+        }
+    }
 
 }

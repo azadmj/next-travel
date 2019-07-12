@@ -12,12 +12,13 @@ import com.azad.trips.consts.URLEnum;
 import com.azad.trips.exception.ApplicationException;
 import com.azad.trips.exception.RouteNotFoundException;
 import com.azad.trips.model.Departure;
+import com.azad.trips.model.NextTripBase;
 import com.azad.trips.model.Response;
 import com.azad.trips.model.Route;
 
 public class NextBusFinderService {
 
-	private ResponseMapper responseMapper = new ResponseMapper();
+	private ResponseMapperService responseMapper = new ResponseMapperService();
 
 	public Long timeToNextBus(String route, String stopName, String direction) throws ApplicationException {
 		
@@ -28,24 +29,25 @@ public class NextBusFinderService {
 		Response validStop = validateStop(stopName, validRoute.getRoute(), validDirection.getValue());
 		System.out.println("VALID STOP :" + validStop);
 		List<Departure> timeDepartures = timeDepartures(validStop.getValue(), validRoute.getRoute(), validDirection.getValue());
-		System.out.println("Time Departures :" + timeDepartures);
 		return nextDepartureTime(timeDepartures);
+	}
+	
+	private <T> T searchWhatMatters(List<T> R, String searchText) {
+		TreeSet<T> matches = R.stream().filter(o -> ((NextTripBase) o).hasMatching(searchText)).distinct()
+				.collect(Collectors.toCollection(TreeSet::new));
+		if (matches.size() > 1 || matches.size() < 1)
+			throw new RouteNotFoundException("More than one Route or None found for the Route: ");
+		return matches.first();
 	}
 
 	private Route validateRoute(String route) {
 		List<Route> availableRoutes = responseMapper.findRoutes(URLEnum.ROUTES.url());
-		System.out.println("Available Routes " + availableRoutes);
-		List<Route> routeMatchName = availableRoutes.stream().filter(r -> r.hasMatchingRoutes(route)).distinct()
-				.collect(Collectors.toList());
-		if (routeMatchName.size() > 1 || routeMatchName.size() < 1)
-			throw new RouteNotFoundException("More than one Route or None found for the Route: " + route);
-		
-		Route validRoute = routeMatchName.get(0);
+		Route validRoute = searchWhatMatters(availableRoutes, route);
 		return validRoute;
 	}
 
 	private Response validateDirection(String direction, Integer routeId) {
-		DirectionsEnum inputDirection = DirectionsEnum.valueOf(direction.toUpperCase());
+		DirectionsEnum inputDirection = DirectionsEnum.lookup(direction.toUpperCase());
 		if(inputDirection == null) {
 			throw new RouteNotFoundException("invalid Direction : "+direction);
 		}
@@ -82,8 +84,9 @@ public class NextBusFinderService {
 		SortedSet<Departure> scheduleAfterNow = schedule.stream()
 												.filter(d -> d.hasScheduleAfterNow(today.getTime()))
 												.distinct().collect(Collectors.toCollection(TreeSet::new));
-		System.out.println("Actual schedule size " + schedule.size() + " After match:: " + " Size " + scheduleAfterNow.size() + " Data " + scheduleAfterNow);
-		
-		return scheduleAfterNow.first().getTimeToNextBus();
+		if(scheduleAfterNow.isEmpty()) 
+			return -1l;
+		Departure nearDeparture = scheduleAfterNow.first();
+		return nearDeparture.getTimeToNextBus();
 	}
 }

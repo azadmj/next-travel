@@ -1,6 +1,6 @@
 package com.azad.trips.model;
 
-public class Response {
+public class Response implements Comparable<Response>{
 
 	private String text;
 	private String value;
@@ -38,5 +38,10 @@ public class Response {
 		builder.append(value);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	@Override
+	public int compareTo(Response o) {
+		return this.value.compareTo(o.getValue());
 	}
 }

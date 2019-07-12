@@ -5,9 +5,8 @@ public enum URLEnum {
 	ROUTES("http://svc.metrotransit.org/NexTrip/Routes"),
 	DIRECTIONS("http://svc.metrotransit.org/NexTrip/Directions/"),
 	STOPS("http://svc.metrotransit.org/NexTrip/Stops/"),
-	DEPARTURES(""),
+	DEPARTURES("http://svc.metrotransit.org/NexTrip/"),
 	TIME_POINT_DEPARTURES("http://svc.metrotransit.org/NexTrip/"),
-	VEHICLE_LOCATIONS(""),
 	UNKNOWN("");
 	
 	
